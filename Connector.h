@@ -11,6 +11,12 @@
 #include "Command.h"
 #include <iostream>
 
+bool checkDupStatus(int);
+bool checkCloseStatus(int);
+bool checkPipeStatus(int);
+bool checkOpenStatus(int);
+bool checkDup2Status(int);
+
 char** VectorToChar(const vector<char*>& oldVector);
 
 class Connector : public Command {
@@ -91,7 +97,6 @@ public:
 };
 
 class Pipe : public Connector {
-public:
 public:
 	Pipe();
 	~Pipe();

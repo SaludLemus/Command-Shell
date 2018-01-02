@@ -180,7 +180,6 @@ bool StatCommand::execute() {
 		cout << "True" << endl;
 		return true;
 	}
-
 		// check if -d
 	else if (get_file_type == "-d") {
 			// checks if directory
@@ -192,7 +191,6 @@ bool StatCommand::execute() {
 			cout << "False" << endl;
 		}
 	}
-
 		// check if -f
 	else if (get_file_type == "-f") {
 			// if regular file
@@ -204,7 +202,6 @@ bool StatCommand::execute() {
 			cout << "False" << endl; // else print false
 		}
 	}
-
 	else {
 		cout << "False" << endl;
 	}
@@ -215,6 +212,7 @@ bool StatCommand::execute() {
 void StatCommand::display() {
 	if (command) {
 		bool flag_exists = true;
+
 		// if [ ] exists, will use state instead
 		// assuming full command exists (stat or [] and flag or not and PATH)
 		cout << command[0] << ' ';
@@ -251,5 +249,3 @@ void StatCommand::setALLCMDS(char** new_cmds) {
 	command = new_cmds;
 	return;
 }
-
-

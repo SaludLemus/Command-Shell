@@ -21,6 +21,4 @@ char** VectorToChar(const vector<char*>& oldVector) {
 	return all_cmds;
 }
 
-
-
 #endif /* CONVERTVECTORTOCHAR_H_ */

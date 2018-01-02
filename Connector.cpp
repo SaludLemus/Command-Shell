@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <errno.h>
 
 And::And() : Connector() {}
 
@@ -142,16 +143,30 @@ bool Output::execute() {
 
 	// set fds
 	int save_1 = dup(1); // duplicate fd[1]
+	if (!checkDupStatus(save_1)) { // dup status
+			return false;
+	}
 
 	int open_file = open(right_side_files[0], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 
-	if (open_file == -1) { // open() failed
-		perror("File does not exist.");
+	if (!checkOpenStatus(open_file)) { // open status
+			return false;
+	}
+
+	int dup2_status = dup2(open_file, 1); // set file to fd[1]
+	if (!checkDup2Status(dup2_status)) {
+		close(open_file);
+		dup2(save_1, 1);
+		close(save_1);
 		return false;
 	}
 
-	dup2(open_file, 1); // set file to fd[1]
-	close(open_file);
+	int close_status = close(open_file);
+	if (!checkCloseStatus(close_status)) { // close statuss
+		dup2(save_1, 1);
+		close(save_1);
+		return false;
+	}
 
 	if (!entire_command->execute()) { // execute
 		execute_value = false;
@@ -159,7 +174,9 @@ bool Output::execute() {
 
 	// revert fds to normal
 	dup2(save_1, 1);
-	close(save_1);
+
+	int close_status = close(save_1);
+	if (!checkCloseStatus(close_status)) {;} // close status
 
 	return execute_value;
 }
@@ -257,16 +274,29 @@ bool Append::execute() {
 
 	// set fds
 	int save_1 = dup(1); // duplicate fd[1]
-
-	int open_file = open(right_side_files[0], O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
-
-	if (open_file == -1) { // open() failed
-		perror("File does not exist.");
+	if (!checkDupStatus(save_1)) { // dup status
 		return false;
 	}
 
-	dup2(open_file, 1); // set file to fd[1]
-	close(open_file);
+	int open_file = open(right_side_files[0], O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
+	if (!checkOpenStatus(open_file)) { // open status
+		return false;
+	}
+
+	int dup2_status = dup2(open_file, 1); // set file to fd[1]
+	if (!checkDup2Status(dup2_status)) {
+		close(open_file);
+		dup2(save_1, 1);
+		close(save_1);
+		return false;
+	}
+
+	int close_status = close(open_file);
+	if (!checkCloseStatus(close_status)) { // close status
+		dup2(save_1, 1);
+		close(save_1);
+		return false;
+	}
 
 	if (!entire_command->execute()) { // execute
 		execute_value = false;
@@ -274,7 +304,9 @@ bool Append::execute() {
 
 	// revert fds to normal
 	dup2(save_1, 1);
-	close(save_1);
+
+	int close_status = close(save_1);
+	if (!checkCloseStatus(close_status)) {;} // close status
 
 	return execute_value;
 }
@@ -453,8 +485,11 @@ bool Input::execute() {
 
 	int input_file = open(right_side_files[0], O_RDONLY, S_IRUSR | S_IWUSR); // open file in read-only
 
-	if (input_file == -1) {
-		perror("Input file does not exist.");
+//	if (input_file == -1) {
+//		perror("Input file does not exist.");
+//		return false;
+//	}
+	if (!checkOpenStatus(input_file)) {
 		return false;
 	}
 
@@ -525,5 +560,116 @@ void Input::setALLCMDS(char** new_cmds) {
 	entire_command = new DefaultCommand(new_cmds); // set data mem. to param.
 	return;
 }
+
+
+bool checkDupStatus(int dup_status) {
+	if (dup_status == -1) { // check errno
+		if (errno == EBADF) {
+			perror("Oldfd isn't an open file descriptor or newfd is out of the allowed range for file descriptors.");
+		}
+		else if (errno == EMFILE) {
+			perror("The per-process limit on the number of open file descriptors has been reached.");
+		}
+		else {
+			perror("Dup2() failed.");
+		}
+		return false;
+	}
+
+		return true;
+}
+
+
+bool checkCloseStatus(int close_status) {
+	if (close_status == -1) { // check errno
+		if (errno == EBADF) {
+			perror("Fd isn't a valid open file descriptor.");
+		}
+		else if (errno == EINTR) {
+			perror("The close() call was interrupted by a signal");
+		}
+		else if (errno == EIO) {
+			perror("An I/O error occurred.");
+		}
+		else {
+			perror("Pipe() failed.");
+		}
+		return false;
+	}
+
+	return true;
+}
+
+
+bool checkPipeStatus(int pipe_status) {
+	if (pipe_status == -1) { // check errno
+		if (errno == EFAULT) {
+			perror("Pipefd is not valid");
+		}
+		else if (errno == EMFILE) {
+			perror("The per-process limit on the number of open file descriptors has been reached.");
+		}
+		else if (errno == ENFILE) {
+			perror("The system-wide limit on the total number of open files has been reached.");
+		}
+		else {
+			perror("Pipe() failed.");
+		}
+		return false;
+	}
+
+	return true;
+}
+
+
+bool checkOpenStatus(int open_status) {
+	if (open_status == -1) { // check errno
+		if (errno == EACCES) {
+			perror("The requested access to the file is not allowed or file does not exist");
+		}
+		else if (errno == EFAULT) {
+			perror("PATHNAME points outside your accessible address space.");
+		}
+		else if (errno == ENFILE) {
+			perror("The system-wide limit on the total number of open files has been reached.");
+		}
+		else {
+			perror("Open() failed.");
+		}
+		return false;
+	}
+
+	return true;
+}
+
+
+bool checkDup2Status(int dup2_status) {
+	if (dup2_status == -1) { // check errno
+		if (errno == EBADF) {
+			perror("Oldfd isn't an open file descriptor or newfd is out of the allowed range for file descriptors.");
+		}
+		else if (errno == EBUSY) {
+			perror("This may be returned by dup2() or dup3() during a race condition with open(2) and dup().");
+		}
+		else if (errno == EINTR) {
+			perror("Dup2() call was interrupted by a signal;");
+		}
+		else if (errno == EMFILE) {
+			perror("The per-process limit on the number of open file descriptors has been reached.");
+		}
+		else {
+			perror("Dup2() failed.");
+		}
+		return false;
+	}
+
+	return true;
+}
+
+
+
+
+
+
 
 
