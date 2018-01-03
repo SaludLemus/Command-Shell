@@ -386,9 +386,21 @@ bool Pipe::execute() {
 	pipe(change_redirection);
 
 	int save_1 = dup(1); // redirect output
+	if (!checkDupStatus(save_1)) { // dup status
+		close(change_redirection[0]);
+		close(change_redirection[1]);
+		return false;
+	}
 
 	// change 1 to be fd from pipe
-	dup2(change_redirection[1], 1); // set write-end of the pipe
+	int dup2_status = dup2(change_redirection[1], 1); // set write-end of the pipe
+	if (!checkDup2Status(dup2_status)) { // dup2 status
+		close(save_1);
+		close(change_redirection[0]);
+		close(change_redirection[1]);
+		return false;
+	}
+
 	close(change_redirection[1]);
 
 	// execute left child
@@ -407,6 +419,10 @@ bool Pipe::execute() {
 	}
 
 	int save_0 = dup(0); // redirect input
+	if (!checkDupStatus(save_0)) { // dup status
+		close(change_redirection[0]);
+		return false;
+	}
 
 	// change 0 to be fd from pipe
 	dup2(change_redirection[0], 0);
@@ -484,16 +500,15 @@ bool Input::execute() {
 	entire_command = new DefaultCommand(getALLCMDS()); // generate new command with left-side and right-side combined
 
 	int input_file = open(right_side_files[0], O_RDONLY, S_IRUSR | S_IWUSR); // open file in read-only
-
-//	if (input_file == -1) {
-//		perror("Input file does not exist.");
-//		return false;
-//	}
 	if (!checkOpenStatus(input_file)) {
 		return false;
 	}
 
 	int save_0 = dup(0); // save fd[0]
+	if (!checkDupStatus(save_0)) { // dup status
+		close(input_file);
+		return false;
+	}
 
 	dup2(input_file, 0); // copy input_file's fd into fd[0]
 	close(input_file);
