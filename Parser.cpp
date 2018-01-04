@@ -7,8 +7,16 @@
 
 #include "Parser.h"
 #include <iostream>
+#include <unistd.h>
+#include <cstdlib>
+#include <sys/types.h>
+#include <pwd.h>
+#include <errno.h>
+#include <stdio.h>
 
-Parser::Parser() : current_commands(0) {}
+Parser::Parser() : current_commands(0) {
+	current_commands = new vector<Command*>;
+}
 
 Parser::Parser(const string& user_input) : user_input(user_input) {
 	current_commands = new vector<Command*>();
@@ -18,6 +26,26 @@ Parser::~Parser() {current_commands = 0;}
 
 vector<Command*>* Parser::getCommands() {
 	return current_commands;
+}
+
+void Parser::askUser() {
+	uid_t user_id = getuid(); // get current user's ID
+	errno = 0;
+	struct passwd* user_info = getpwuid(user_id); // retrieve user ID's info
+	string new_user_input;
+
+	if (user_info == NULL) { // entry not found
+		checkUserFailure();
+		exit(EXIT_FAILURE);
+	}
+
+	while(new_user_input.size() == 0) {
+		cout << user_info->pw_name << "$ " << flush; // prompt
+		getline(cin, new_user_input); // ask for user input
+	}
+
+	user_input = new_user_input;
+	return;
 }
 
 void Parser::parse() {
@@ -213,4 +241,37 @@ void Parser::updateParser(boost::tokenizer<boost::char_separator<char> >::iterat
 	return;
 }
 
+void Parser::checkUserFailure() {
+	if (errno == 0 || errno == ENOENT || errno == EBADF || errno == EPERM) {
+		perror("Either the name or uid was not found.");
+	}
+	else if (errno == EINTR) {
+		perror("A signal was caught.");
+	}
+	else if (errno == EIO) {
+			perror("I/O error.");
+	}
+	else if (errno == EMFILE) {
+			perror("The maximum number of files have already been opened within the current calling process.");
+	}
+	else if (errno == ENOMEM) {
+			perror("Insufficient memory to allocate passwd structure.");
+	}
+	else if (errno == ERANGE) {
+			perror("Insufficient buffer space supplied.");
+	}
+	else if (errno == ENFILE) {
+			perror("The maximum number of files was open already in the system.");
+	}
 
+	return;
+}
+
+string Parser::getUserInput() {
+	return user_input;
+}
+
+void Parser::setUserInput(const string & new_input) {
+	user_input = new_input;
+	return;
+}
