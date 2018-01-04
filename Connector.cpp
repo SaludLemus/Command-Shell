@@ -175,7 +175,7 @@ bool Output::execute() {
 	// revert fds to normal
 	dup2(save_1, 1);
 
-	int close_status = close(save_1);
+	close_status = close(save_1);
 	if (!checkCloseStatus(close_status)) {;} // close status
 
 	return execute_value;
@@ -305,7 +305,7 @@ bool Append::execute() {
 	// revert fds to normal
 	dup2(save_1, 1);
 
-	int close_status = close(save_1);
+	close_status = close(save_1);
 	if (!checkCloseStatus(close_status)) {;} // close status
 
 	return execute_value;
