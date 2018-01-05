@@ -33,14 +33,21 @@ void Parser::askUser() {
 	errno = 0;
 	struct passwd* user_info = getpwuid(user_id); // retrieve user ID's info
 	string new_user_input;
+	char* full_path = get_current_dir_name; // gets full path
 
 	if (user_info == NULL) { // entry not found
 		checkUserFailure();
 		exit(EXIT_FAILURE);
 	}
 
+	updatePath(full_path); // convert char* to string path
+	free(full_path); // dealloc char*
+
 	while(new_user_input.size() == 0) {
-		cout << user_info->pw_name << "$ " << flush; // prompt
+		cout << user_info->pw_name << "@test" << flush;
+		printPath(); // entire path
+		cout << "$ " << flush; // prompt
+
 		getline(cin, new_user_input); // ask for user input
 	}
 
@@ -275,3 +282,31 @@ void Parser::setUserInput(const string & new_input) {
 	user_input = new_input;
 	return;
 }
+
+void Parser::updatePath(char* full_path) {
+	string str_full_path(full_path); // convert to str
+	boost::char_separator<char> sep("/");
+	boost::tokenizer<boost::char_separator<char> > tok(str_full_path, sep); // set tokenizer
+
+	for (boost::tokenizer<boost::char_separator<char> > start = tok.begin(); start != tok.end(); ++start) {
+		current_path.push(*start);
+	}
+
+	return;
+}
+
+void Parser::printPath() {
+	stack<string> revert_path;
+
+	while (!current_path.empty()) { // flip the stack
+		revert_path.push(current_path.top());
+		current_path.pop();
+	}
+
+	while (!revert_path.empty()) { // proper order (left to right for directories)
+		current_path.push(revert_path.top());
+		revert_path.pop();
+	}
+	return;
+}
+

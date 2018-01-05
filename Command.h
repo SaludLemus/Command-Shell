@@ -9,6 +9,8 @@
 #define COMMAND_H_
 
 #include <vector>
+#include <string>
+#include <stack>
 using namespace std;
 
 class Command {
@@ -54,6 +56,20 @@ public:
 	StatCommand();
 	StatCommand(char**);
 	~StatCommand();
+	bool execute();
+	void display();
+	char** getALLCMDS();
+	void setALLCMDS(char**);
+};
+
+class ChangeDirectory : public Command {
+private:
+	char** command;
+	stack<string> entire_directory;
+public:
+	ChangeDirectory();
+	ChangeDirectory(char**, const stack<string> &);
+	~ChangeDirectory();
 	bool execute();
 	void display();
 	char** getALLCMDS();

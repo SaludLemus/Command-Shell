@@ -244,8 +244,47 @@ char** StatCommand::getALLCMDS() {
 	return command;
 }
 
-
+char*
 void StatCommand::setALLCMDS(char** new_cmds) {
 	command = new_cmds;
 	return;
 }
+
+ChangeDirectory::ChangeDirectory() : Command(), command(0) {}
+
+ChangeDirectory::ChangeDirectory(char** new_cmd, const stack<string> &current_dir) : Command() , command(new_cmd), entire_directory(current_dir) {}
+
+ChangeDirectory::~ChangeDirectory() {
+	if (command) {
+		int index = 0;
+
+		while (command[index]) { // dealloc each char*
+			char* entire_cmd = command[index];
+			delete [] entire_cmd;
+
+			++index;
+		}
+		delete [] command; // dealloc char**
+		command = 0;
+	}
+}
+
+bool ChangeDirectory::execute() {
+
+	return true;
+}
+
+void ChangeDirectory::display() {
+
+	return;
+}
+
+char** ChangeDirectory::getALLCMDS() {
+	return command;
+}
+
+void ChangeDirectory::setALLCMDS(char** new_cmd) {
+	command = new_cmd;
+	return;
+}
+
