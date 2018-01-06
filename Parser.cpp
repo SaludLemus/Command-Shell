@@ -41,12 +41,13 @@ void Parser::askUser() {
 	}
 
 	updatePath(full_path); // convert char* to string path
-	free(full_path); // dealloc char*
 
 	while(new_user_input.size() == 0) {
 		cout << user_info->pw_name << "@test" << flush;
-		printPath(); // entire path
+		printPath(full_path); // entire path
 		cout << "$ " << flush; // prompt
+
+		free(full_path); // dealloc char*
 
 		getline(cin, new_user_input); // ask for user input
 	}
@@ -142,6 +143,16 @@ void Parser::parse() {
 			new_pipe_cmd->setRightChild(getNextCommand(start, tok, number_parses));
 
 			updateParser(start, current_parse, number_parses, all_cmds, new_pipe_cmd);
+		}
+		else if (current_word.size() >= 2 && current_word == "cd") { // change directory
+			int current_parse = 0;
+			++start;
+
+			Command* new_change_directory = new ChangeDirectory(getRightSide(start, tok, number_parses), current_path);
+
+			new_change_directory->execute(); // changes path
+
+			updateParser(start, current_parse, number_parses, all_cmds, new_change_directory);
 		}
 		else { // append to vector
 			all_cmds.push_back(convertStrToChar(current_word)); // append char*
@@ -295,7 +306,7 @@ void Parser::updatePath(char* full_path) {
 	return;
 }
 
-void Parser::printPath() {
+void Parser::printPath(char* full_path) {
 	stack<string> revert_path;
 
 	while (!current_path.empty()) { // flip the stack
@@ -305,8 +316,14 @@ void Parser::printPath() {
 
 	while (!revert_path.empty()) { // proper order (left to right for directories)
 		current_path.push(revert_path.top());
+
 		revert_path.pop();
 	}
+
+	if (full_path) { // remove last '/' and print to stdout
+		cout << full_path << endl;
+	}
+
 	return;
 }
 

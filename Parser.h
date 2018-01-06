@@ -26,7 +26,7 @@ private:
 	void updateParser(boost::tokenizer<boost::char_separator<char> >::iterator&, int, int &, vector<char*>&, Command*);
 	void checkUserFailure();
 	void updatePath();
-	void printPath();
+	void printPath(char*);
 public:
 	Parser();
 	Parser(const string&);

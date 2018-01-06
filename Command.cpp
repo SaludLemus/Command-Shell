@@ -270,12 +270,32 @@ ChangeDirectory::~ChangeDirectory() {
 }
 
 bool ChangeDirectory::execute() {
+	if (command) { // exists
+		string directory(command[0]); // contains directory
+
+		if (directory.size() >= 2 && directory == "..") { // pop stack
+			entire_directory.pop();
+		}
+		else if (directory.size() >= 1 && directory == ".") { // do nothing
+			;
+		}
+		else {
+			int directory_value = chdir(command[0]); // changes process to that of the new directory
+
+			if (directory_value == -1) { // chdir() failed
+				perror("Directory does not exist.");
+				return false;
+			}
+		}
+	}
 
 	return true;
 }
 
 void ChangeDirectory::display() {
-
+	if (command) {
+		cout << "cd " << command[0];
+	}
 	return;
 }
 
