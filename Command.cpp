@@ -244,7 +244,6 @@ char** StatCommand::getALLCMDS() {
 	return command;
 }
 
-char*
 void StatCommand::setALLCMDS(char** new_cmds) {
 	command = new_cmds;
 	return;

@@ -33,7 +33,7 @@ void Parser::askUser() {
 	errno = 0;
 	struct passwd* user_info = getpwuid(user_id); // retrieve user ID's info
 	string new_user_input;
-	char* full_path = get_current_dir_name; // gets full path
+	char* full_path = get_current_dir_name(); // gets full path
 
 	if (user_info == NULL) { // entry not found
 		checkUserFailure();
@@ -299,7 +299,7 @@ void Parser::updatePath(char* full_path) {
 	boost::char_separator<char> sep("/");
 	boost::tokenizer<boost::char_separator<char> > tok(str_full_path, sep); // set tokenizer
 
-	for (boost::tokenizer<boost::char_separator<char> > start = tok.begin(); start != tok.end(); ++start) {
+	for (boost::tokenizer<boost::char_separator<char> >::iterator start = tok.begin(); start != tok.end(); ++start) {
 		current_path.push(*start);
 	}
 
