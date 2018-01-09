@@ -43,13 +43,14 @@ void Parser::askUser() {
 	updatePath(full_path); // convert char* to string path
 
 	while(new_user_input.size() == 0) {
-		cout << user_info->pw_name << "@test" << flush;
+		cout << "[" << user_info->pw_name << "@test " << flush;
 		printPath(full_path); // entire path
-		cout << "$ " << flush; // prompt
+		cout << "]$ " << flush; // prompt
 
 		free(full_path); // dealloc char*
 
 		getline(cin, new_user_input); // ask for user input
+		break;
 	}
 
 	user_input = new_user_input;
@@ -307,21 +308,21 @@ void Parser::updatePath(char* full_path) {
 }
 
 void Parser::printPath(char* full_path) {
-	stack<string> revert_path;
+	//stack<string> revert_path;
 
-	while (!current_path.empty()) { // flip the stack
-		revert_path.push(current_path.top());
-		current_path.pop();
-	}
-
-	while (!revert_path.empty()) { // proper order (left to right for directories)
-		current_path.push(revert_path.top());
-
-		revert_path.pop();
-	}
+//	while (!current_path.empty()) { // flip the stack
+//		revert_path.push(current_path.top());
+//		current_path.pop();
+//	}
+//
+//	while (!revert_path.empty()) { // proper order (left to right for directories)
+//		current_path.push(revert_path.top());
+//
+//		revert_path.pop();
+//	}
 
 	if (full_path) { // remove last '/' and print to stdout
-		cout << full_path << endl;
+		cout << full_path;
 	}
 
 	return;
