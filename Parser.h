@@ -17,16 +17,17 @@ using namespace std;
 
 class Parser {
 private:
-	string user_input;
-	vector<Command*>* current_commands;
-	stack<string> current_path;
-	char** getRightSide(boost::tokenizer<boost::char_separator<char> >::iterator , boost::tokenizer<boost::char_separator<char> >&, int &);
-	Command* getNextCommand(boost::tokenizer<boost::char_separator<char> >::iterator , boost::tokenizer<boost::char_separator<char> >&, int &);
-	char* convertStrToChar(const string &);
-	void updateParser(boost::tokenizer<boost::char_separator<char> >::iterator&, int, int &, vector<char*>&, Command*);
-	void checkUserFailure();
-	void updatePath(char*);
-	void printPath(char*);
+	string user_input; // what to do/ act on
+	vector<Command*>* current_commands; // holds all the commands
+	stack<string> current_path; // allows removal/adding of current directory
+	char** getRightSide(boost::tokenizer<boost::char_separator<char> >::iterator , boost::tokenizer<boost::char_separator<char> >&, int &); // form next char** (right-side of expression)
+	Command* getNextCommand(boost::tokenizer<boost::char_separator<char> >::iterator , boost::tokenizer<boost::char_separator<char> >&, int &); // // form next Command* (right-side of expression)
+	char* convertStrToChar(const string &); // convert string to char*
+	void updateParser(boost::tokenizer<boost::char_separator<char> >::iterator&, int, int &, vector<char*>&, Command*); // moves the iterator forward and updates vector
+	void checkUserFailure(); // perror the source of error for current user within the process
+	void updatePath(char*); // converts current path (char*) into a stack
+	void printPath(char*); // sent to stdout the current path
+	void checkPathFailure(); // perror the source of error forthe system call
 public:
 	Parser();
 	Parser(const string&);
