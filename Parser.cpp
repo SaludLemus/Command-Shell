@@ -33,16 +33,22 @@ void Parser::askUser() {
 	errno = 0;
 	struct passwd* user_info = getpwuid(user_id); // retrieve user ID's info
 	string new_user_input;
-	char* full_path = get_current_dir_name(); // gets full path
 
-	if (user_info == NULL) { // entry not found
+	if (user_info == NULL) { // entry not found (getpwuid() failed)
 		checkUserFailure();
 		exit(EXIT_FAILURE);
 	}
 
-	updatePath(full_path); // convert char* to string path
-
 	while(new_user_input.size() == 0) {
+		char* full_path = get_current_dir_name(); // gets full path
+		
+		if (full_path == NULL) { // get_current_dir_name() failed
+			checkPathFailure();
+			exit(EXIT_FAILURE);
+		}
+		
+		updatePath(full_path); // convert char* to string path
+		
 		cout << "[" << user_info->pw_name << "@test " << flush;
 		printPath(full_path); // entire path
 		cout << "]$ " << flush; // prompt
@@ -50,7 +56,9 @@ void Parser::askUser() {
 		free(full_path); // dealloc char*
 
 		getline(cin, new_user_input); // ask for user input
-		break;
+		break; // under testing
+		
+		// update path below
 	}
 
 	user_input = new_user_input;
@@ -308,23 +316,25 @@ void Parser::updatePath(char* full_path) {
 }
 
 void Parser::printPath(char* full_path) {
-	//stack<string> revert_path;
-
-//	while (!current_path.empty()) { // flip the stack
-//		revert_path.push(current_path.top());
-//		current_path.pop();
-//	}
-//
-//	while (!revert_path.empty()) { // proper order (left to right for directories)
-//		current_path.push(revert_path.top());
-//
-//		revert_path.pop();
-//	}
-
 	if (full_path) { // remove last '/' and print to stdout
-		cout << full_path;
+		cout << current_path.top();
 	}
 
 	return;
 }
+
+void Parser::checkPathFailure() {
+	if (errno == EACCES) { // errno is set
+		perror("Permission to read or search a component of the filename was denied.");
+		
+	}
+	else if (errno == ENOENT) {
+		perror("The current working directory has been unlinked.");
+	}
+	return;
+}
+
+
+
+
 
