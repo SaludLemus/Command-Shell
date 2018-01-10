@@ -269,26 +269,65 @@ ChangeDirectory::~ChangeDirectory() {
 }
 
 bool ChangeDirectory::execute() {
+	bool change_directory_success = false;
+	
 	if (command) { // exists
 		string directory(command[0]); // contains directory
 
-		if (directory.size() >= 2 && directory == "..") { // pop stack
+		if (directory.size() == 2 && directory == "..") { // pop stack
 			entire_directory.pop();
 		}
-		else if (directory.size() >= 1 && directory == ".") { // do nothing
+		else if (directory.size() == 1 && directory == ".") { // do nothing
 			;
 		}
-		else {
-			int directory_value = chdir(command[0]); // changes process to that of the new directory
-
-			if (directory_value == -1) { // chdir() failed
-				perror("Directory does not exist.");
-				return false;
+		else if (directory.size() >=1 && directory.at(0) == '/') { // changing the entire PATH
+			; // handle case for absolute PATH and relative PATH
+		}
+		else if (directory.size() == 1 && directory == "~") { // change to home directory
+			while (entire_directory.!empty() && entire_directory.top() != "home") { // pop directories off from stack until home dir. is reached
+				entire_directory.pop();
 			}
 		}
+		else { // new directory is relative to the current PATH
+			entire_directory.push(directory);
+		}
+		
+		string temp_string_directory = "/"; // will hold absolute PATH
+		stack<string> temp_stack; // revert the stack
+		
+		while (entire_directory.!empty()) { // add to temporary stack
+			temp_stack.push(entire_directory.top());
+			
+			entire_directory.pop();
+		}
+		
+		while (temp_stack.!empty()) { // change back to normal
+			entire_directory.push(temp_stack.top());
+			temp_string_directory.push_back(temp_stack.top() + '/'); // get entire size
+			
+			temp_stack.pop();
+		}
+		
+		// last directory will be : ~/Last_Directory/ (might have to remove the last '/' in order for the system call to work
+		
+		char* new_directory = new char[sizeof(char) * (temp_string_directory.size() + 1)]; // total size: string's + 1 (+1 for NULL char)
+		
+		for (unsigned int i = 0; i < temp_string_directory.size(); ++i) { // convert to char*
+			new_directory[i] = temp_string_directory.at(i);
+		}
+		
+		new_directory[temp_string_directory.size()] = '/0'; // append NULL terminator
+		
+		int change_directory_value = chdir(new_directory); // change current directory of the current process
+		
+		if (change_directory_value == -1) { // cannot change directory
+			checkChangeDirectoryFailure();
+		}
+		
+		change_directory_sucess = true; // success
 	}
 
-	return true;
+	return change_directory_success;
 }
 
 void ChangeDirectory::display() {
