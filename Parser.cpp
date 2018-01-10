@@ -38,22 +38,20 @@ void Parser::askUser() {
 		checkUserFailure();
 		exit(EXIT_FAILURE);
 	}
-
-	while(new_user_input.size() == 0) {
-		char* full_path = get_current_dir_name(); // gets full path
+	
+	char* full_path = get_current_dir_name(); // gets full path
 		
-		if (full_path == NULL) { // get_current_dir_name() failed
-			checkPathFailure();
-			exit(EXIT_FAILURE);
-		}
+	if (full_path == NULL) { // get_current_dir_name() failed
+		checkPathFailure();
+		exit(EXIT_FAILURE);
+	}
 		
-		updatePath(full_path); // convert char* to string path
+	updatePath(full_path); // convert char* to string path
 		
+	while (user_input.size() == 0) {
 		cout << "[" << user_info->pw_name << "@test " << flush;
 		printPath(full_path); // entire path
 		cout << "]$ " << flush; // prompt
-
-		free(full_path); // dealloc char*
 
 		getline(cin, new_user_input); // ask for user input
 		break; // under testing
@@ -61,7 +59,9 @@ void Parser::askUser() {
 		// update path below
 	}
 
-	user_input = new_user_input;
+	free(full_path); // deallocate PATH
+	
+	user_input = new_user_input; // set user input for parsing
 	return;
 }
 
@@ -159,9 +159,11 @@ void Parser::parse() {
 
 			Command* new_change_directory = new ChangeDirectory(getRightSide(start, tok, number_parses), current_path);
 
-			new_change_directory->execute(); // changes path
+			new_change_directory->execute(); // change PATH
 
-			updateParser(start, current_parse, number_parses, all_cmds, new_change_directory);
+			// update parser's PATH
+			
+			updateParser(start, current_parse, number_parses, all_cmds, 0); // update the parser
 		}
 		else { // append to vector
 			all_cmds.push_back(convertStrToChar(current_word)); // append char*
@@ -257,6 +259,8 @@ char* Parser::convertStrToChar(const string &current_word) {
 }
 
 void Parser::updateParser(boost::tokenizer<boost::char_separator<char> >::iterator& initial_position, int current_parse, int & number_parses, vector<char*> & all_cmds, Command* new_cmd) {
+	if (!new_cmd) {return;} // update is not necessary
+	
 	while(current_parse != (number_parses - 1)) { // move current position to new position
 		++initial_position;
 		++current_parse;
@@ -316,8 +320,8 @@ void Parser::updatePath(char* full_path) {
 }
 
 void Parser::printPath(char* full_path) {
-	if (full_path) { // remove last '/' and print to stdout
-		cout << current_path.top();
+	if (full_path) {
+		cout << current_path.top(); // current directory
 	}
 
 	return;
