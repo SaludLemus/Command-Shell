@@ -32,8 +32,7 @@ void Parser::askUser() {
 	uid_t user_id = getuid(); // get current user's ID
 	errno = 0;
 	struct passwd* user_info = getpwuid(user_id); // retrieve user ID's info
-	string new_user_input;
-
+	
 	if (user_info == NULL) { // entry not found (getpwuid() failed)
 		checkUserFailure();
 		exit(EXIT_FAILURE);
@@ -53,15 +52,10 @@ void Parser::askUser() {
 		printPath(full_path); // entire path
 		cout << "]$ " << flush; // prompt
 
-		getline(cin, new_user_input); // ask for user input
-		break; // under testing
-		
-		// update path below
+		getline(cin, user_input); // ask for user input
 	}
-
-	free(full_path); // deallocate PATH
 	
-	user_input = new_user_input; // set user input for parsing
+	free(full_path); // deallocate PATH
 	return;
 }
 
@@ -69,7 +63,7 @@ void Parser::parse() {
 	boost::char_separator<char> sep(" \"");
 	boost::tokenizer<boost::char_separator<char> > tok(user_input, sep); // set tokenizer
 	vector<char*> all_cmds; // holds char*
-
+	
 	for (boost::tokenizer<boost::char_separator<char> >::iterator start = tok.begin(); start != tok.end(); ++start) {
 		string current_word(*start);
 		int number_parses = 0; // for connectors
@@ -157,19 +151,22 @@ void Parser::parse() {
 			int current_parse = 0;
 			++start;
 
-			Command* new_change_directory = new ChangeDirectory(getRightSide(start, tok, number_parses), current_path);
+			ChangeDirectory* new_change_directory = new ChangeDirectory(getRightSide(start, tok, number_parses), current_path);
 
 			new_change_directory->execute(); // change PATH
 
 			// update parser's PATH
+			updatePath(new_change_directory->getDirectory());
 			
 			updateParser(start, current_parse, number_parses, all_cmds, 0); // update the parser
+			
+			delete new_change_directory; // dealloc mem
 		}
 		else { // append to vector
 			all_cmds.push_back(convertStrToChar(current_word)); // append char*
 		}
 	}
-
+	
 	if (all_cmds.size() > 0) { // single command (default cmd)
 		DefaultCommand* new_default_cmd = new DefaultCommand(VectorToChar(all_cmds)); // create char**
 		current_commands->push_back(new_default_cmd); // add new command to vector
@@ -318,6 +315,12 @@ void Parser::updatePath(char* full_path) {
 
 	return;
 }
+
+void Parser::updatePath(stack<string> & new_directory) {
+	current_path = new_directory; // set directory
+	return;
+}
+
 
 void Parser::printPath(char* full_path) {
 	if (full_path) {
