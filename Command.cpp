@@ -270,6 +270,7 @@ ChangeDirectory::~ChangeDirectory() {
 
 bool ChangeDirectory::execute() {
 	bool change_directory_success = false;
+	string next_directory = "/";
 	
 	if (command) { // exists
 		string directory(command[0]); // contains directory
@@ -284,7 +285,7 @@ bool ChangeDirectory::execute() {
 			; // handle case for absolute PATH and relative PATH
 		}
 		else if (directory.size() == 1 && directory == "~") { // change to home directory
-			while (entire_directory.!empty() && entire_directory.top() != "home") { // pop directories off from stack until home dir. is reached
+			while (!entire_directory.empty() && entire_directory.top() != "home") { // pop directories off from stack until home dir. is reached
 				entire_directory.pop();
 			}
 		}
@@ -292,18 +293,19 @@ bool ChangeDirectory::execute() {
 			entire_directory.push(directory);
 		}
 		
-		string temp_string_directory = "/"; // will hold absolute PATH
+		string temp_string_directory = next_directory; // will hold absolute PATH
 		stack<string> temp_stack; // revert the stack
 		
-		while (entire_directory.!empty()) { // add to temporary stack
+		while (!entire_directory.empty()) { // add to temporary stack
 			temp_stack.push(entire_directory.top());
 			
 			entire_directory.pop();
 		}
 		
-		while (temp_stack.!empty()) { // change back to normal
+		while (!temp_stack.empty()) { // change back to normal
 			entire_directory.push(temp_stack.top());
-			temp_string_directory.push_back(temp_stack.top() + '/'); // get entire size
+			temp_string_directory.append(temp_stack.top()); // get entire size
+			temp_string_directory.append(next_directory);
 			
 			temp_stack.pop();
 		}
@@ -316,7 +318,7 @@ bool ChangeDirectory::execute() {
 			new_directory[i] = temp_string_directory.at(i);
 		}
 		
-		new_directory[temp_string_directory.size()] = '/0'; // append NULL terminator
+		new_directory[temp_string_directory.size()] = '\0'; // append NULL terminator
 		
 		int change_directory_value = chdir(new_directory); // change current directory of the current process
 		
@@ -324,7 +326,7 @@ bool ChangeDirectory::execute() {
 			checkChangeDirectoryFailure();
 		}
 		
-		change_directory_sucess = true; // success
+		change_directory_success = true; // success
 	}
 
 	return change_directory_success;
@@ -346,3 +348,34 @@ void ChangeDirectory::setALLCMDS(char** new_cmd) {
 	return;
 }
 
+stack<string>& ChangeDirectory::getDirectory() {
+	return entire_directory;
+}
+
+void ChangeDirectory::checkChangeDirectoryFailure() {
+	if (errno == EACCES) { // errno is set
+		perror("Search permission is denied for one of the directories.");
+	}
+	else if (errno == EFAULT) {
+		perror("Path points outside your accessible address space.");
+	}
+	else if (errno == EIO) {
+		perror("An I/O error occurred.");
+	}
+	else if (errno == ELOOP) {
+		perror("Too many symbolic links were encountered in resolving path.");
+	}
+	else if (errno == ENAMETOOLONG) {
+		perror("Path is too long.");
+	}
+	else if (errno == ENOENT) {
+		perror("The file does not exist.");
+	}
+	else if (errno == ENOMEM) {
+		perror("Insufficient kernel memory was available.");
+	}
+	else if (errno == ENOTDIR) {
+		perror("A component of path is not a directory");
+	}
+	return;
+}

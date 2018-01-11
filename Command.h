@@ -66,6 +66,7 @@ class ChangeDirectory : public Command {
 private:
 	char** command;
 	stack<string> entire_directory;
+	void checkChangeDirectoryFailure();
 public:
 	ChangeDirectory();
 	ChangeDirectory(char**, const stack<string> &);
@@ -74,6 +75,7 @@ public:
 	void display();
 	char** getALLCMDS();
 	void setALLCMDS(char**);
+	stack<string>& getDirectory();
 };
 
 #endif /* COMMAND_H_ */
