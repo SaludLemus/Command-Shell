@@ -67,6 +67,7 @@ private:
 	char** command;
 	stack<string> entire_directory;
 	void checkChangeDirectoryFailure();
+	void changeToHomeDirectory();
 public:
 	ChangeDirectory();
 	ChangeDirectory(char**, const stack<string> &);

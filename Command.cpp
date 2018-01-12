@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <boost/tokenizer.hpp>
 
 AllCommands::AllCommands() : Command(), current_commands(0) {}
 
@@ -274,23 +275,29 @@ bool ChangeDirectory::execute() {
 	
 	if (command) { // exists
 		string directory(command[0]); // contains directory
-
-		if (directory.size() == 2 && directory == "..") { // pop stack
-			entire_directory.pop();
-		}
-		else if (directory.size() == 1 && directory == ".") { // do nothing
-			;
-		}
-		else if (directory.size() >=1 && directory.at(0) == '/') { // changing the entire PATH
-			; // handle case for absolute PATH and relative PATH
-		}
-		else if (directory.size() == 1 && directory == "~") { // change to home directory
-			while (!entire_directory.empty() && entire_directory.top() != "home") { // pop directories off from stack until home dir. is reached
-				entire_directory.pop();
+		boost::char_separator<char> sep("/");
+		boost::tokenizer<boost::char_separator<char> > dir(directory, sep);
+		
+		for (boost::tokenizer<boost::char_separator<char> >::iterator itr = dir.begin(); itr != dir.end(); ++itr) {
+			string current_item(*itr); // get string
+			
+			if (current_item.empty()) { // a '/' was encountered
+				;
 			}
-		}
-		else { // new directory is relative to the current PATH
-			entire_directory.push(directory);
+			else if (current_item == ".") { // stay in the same directory
+				;
+			}
+			else if (current_item == "..") { // go back one directory
+				if (!entire_directory.empty()) {
+					entire_directory.pop(); // remove current directory
+				}
+			}
+			else if (current_item == "~") { // start from the home directory
+				changeToHomeDirectory();
+			}
+			else { // a directory
+				entire_directory.push(current_item); // add to PATH
+			}
 		}
 		
 		string temp_string_directory = next_directory; // will hold absolute PATH
@@ -379,3 +386,12 @@ void ChangeDirectory::checkChangeDirectoryFailure() {
 	}
 	return;
 }
+
+void ChangeDirectory::changeToHomeDirectory() {
+	while (!entire_directory.empty() && entire_directory.top() != "home") { // continue to pop until home directory is reached
+		entire_directory.pop();
+	}
+	return;
+}
+
+
