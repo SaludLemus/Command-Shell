@@ -277,6 +277,7 @@ bool ChangeDirectory::execute() {
 		string directory(command[0]); // contains directory
 		boost::char_separator<char> sep("/");
 		boost::tokenizer<boost::char_separator<char> > dir(directory, sep);
+		stack<string> temp_directory(entire_directory); // determines whether new directory exists or not
 		
 		for (boost::tokenizer<boost::char_separator<char> >::iterator itr = dir.begin(); itr != dir.end(); ++itr) {
 			string current_item(*itr); // get string
@@ -288,29 +289,29 @@ bool ChangeDirectory::execute() {
 				;
 			}
 			else if (current_item == "..") { // go back one directory
-				if (!entire_directory.empty()) {
-					entire_directory.pop(); // remove current directory
+				if (!temp_directory.empty()) {
+					temp_directory.pop(); // remove current directory
 				}
 			}
 			else if (current_item == "~") { // start from the home directory
 				changeToHomeDirectory();
 			}
 			else { // a directory
-				entire_directory.push(current_item); // add to PATH
+				temp_directory.push(current_item); // add to PATH
 			}
 		}
 		
 		string temp_string_directory = next_directory; // will hold absolute PATH
 		stack<string> temp_stack; // revert the stack
 		
-		while (!entire_directory.empty()) { // add to temporary stack
-			temp_stack.push(entire_directory.top());
+		while (!temp_directory.empty()) { // add to temporary stack
+			temp_stack.push(temp_directory.top());
 			
-			entire_directory.pop();
+			temp_directory.pop();
 		}
 		
 		while (!temp_stack.empty()) { // change back to normal
-			entire_directory.push(temp_stack.top());
+			temp_directory.push(temp_stack.top());
 			temp_string_directory.append(temp_stack.top()); // get entire size
 			temp_string_directory.append(next_directory);
 			
@@ -331,6 +332,9 @@ bool ChangeDirectory::execute() {
 		
 		if (change_directory_value == -1) { // cannot change directory
 			checkChangeDirectoryFailure();
+		}
+		else {
+			entire_directory = temp_directory; // copy over new directory for the Parse's PATH
 		}
 		
 		change_directory_success = true; // success
