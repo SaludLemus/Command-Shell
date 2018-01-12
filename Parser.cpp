@@ -48,7 +48,7 @@ void Parser::askUser() {
 	updatePath(full_path); // convert char* to string path
 		
 	while (user_input.size() == 0) {
-		cout << "[" << user_info->pw_name << "@test " << flush;
+		cout << "[" << user_info->pw_name << "@by_salud " << flush;
 		printPath(full_path); // entire path
 		cout << "]$ " << flush; // prompt
 
