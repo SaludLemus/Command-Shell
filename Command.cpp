@@ -272,7 +272,7 @@ ChangeDirectory::~ChangeDirectory() {
 bool ChangeDirectory::execute() {
 	bool change_directory_success = false;
 	string next_directory = "/";
-	
+
 	if (command) { // exists
 		string directory(command[0]); // contains directory
 		boost::char_separator<char> sep("/");
@@ -289,7 +289,7 @@ bool ChangeDirectory::execute() {
 				;
 			}
 			else if (current_item == "..") { // go back one directory
-				if (!temp_directory.empty()) {
+				if (!temp_directory.empty() && temp_directory.top() != "home") {
 					temp_directory.pop(); // remove current directory
 				}
 			}
@@ -318,7 +318,9 @@ bool ChangeDirectory::execute() {
 			temp_stack.pop();
 		}
 		
-		// last directory will be : ~/Last_Directory/ (might have to remove the last '/' in order for the system call to work
+		if (!temp_string_directory.empty()) {
+			temp_string_directory.pop_back(); // remove last '/'
+		}
 		
 		char* new_directory = new char[sizeof(char) * (temp_string_directory.size() + 1)]; // total size: string's + 1 (+1 for NULL char)
 		
