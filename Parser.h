@@ -24,11 +24,12 @@ private:
 	Command* getNextCommand(boost::tokenizer<boost::char_separator<char> >::iterator , boost::tokenizer<boost::char_separator<char> >&, int &); // // form next Command* (right-side of expression)
 	char* convertStrToChar(const string &); // convert string to char*
 	void updateParser(boost::tokenizer<boost::char_separator<char> >::iterator&, int, int &, vector<char*>&, Command*); // moves the iterator forward and updates vector
-	void checkUserFailure(); // perror the source of error for current user within the process
 	void updatePath(char*); // converts current path (char*) into a stack
 	void updatePath(stack<string>&); // command's stack will serve as input to change parser's stack
 	void printPath(char*); // sent to stdout the current path
-	void checkPathFailure(); // perror the source of error forthe system call
+	void checkPathFailure(); // perror the source of error for the system call
+	void checkUserFailure(); // perror the source of error for current user within the process
+	void checkHostNameFailure(); // perror the source of error when retrieving the current host name of the process
 public:
 	Parser();
 	Parser(const string&);
