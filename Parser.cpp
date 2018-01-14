@@ -13,6 +13,7 @@
 #include <pwd.h>
 #include <errno.h>
 #include <stdio.h>
+#include <limits.h>
 
 Parser::Parser() : current_commands(0) {
 	current_commands = new vector<Command*>;
@@ -32,6 +33,7 @@ void Parser::askUser() {
 	uid_t user_id = getuid(); // get current user's ID
 	errno = 0;
 	struct passwd* user_info = getpwuid(user_id); // retrieve user ID's info
+	char* current_host_name = new char[sizeof(char) * HOST_NAME_MAX]; // retrieve host name
 	
 	if (user_info == NULL) { // entry not found (getpwuid() failed)
 		checkUserFailure();
@@ -46,9 +48,14 @@ void Parser::askUser() {
 	}
 		
 	updatePath(full_path); // convert char* to string path
-		
+	
+	if (gethostname(current_host_name, HOST_NAME_MAX) == -1) { // error
+		checkHostNameFailure(); // find source of error
+		exit(EXIT_FAILURE); // terminate the process
+	}
+	
 	while (user_input.size() == 0) {
-		cout << "[" << user_info->pw_name << "@by_salud " << flush;
+		cout << "[" << user_info->pw_name << '@' << current_host_name << ' ' << flush;
 		printPath(full_path); // entire path
 		cout << "]$ " << flush; // prompt
 
@@ -341,7 +348,18 @@ void Parser::checkPathFailure() {
 	return;
 }
 
-
+void Parser::checkHostNameFailure() {
+	if (errno == EFAULT) { // determine error code
+		perror("Name is an invalid address.");
+	}
+	else if (errno == EINVAL) {
+		perror("Either the len is negative or len is larger than the maximum allowed size.");
+	}
+	else if (errno == ENAMETOOLONG) {
+		perror("Len is smaller than the actual size.");
+	}
+	return;
+}
 
 
 
