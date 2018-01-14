@@ -159,15 +159,8 @@ void Parser::parse() {
 			++start;
 
 			ChangeDirectory* new_change_directory = new ChangeDirectory(getRightSide(start, tok, number_parses), current_path);
-
-			new_change_directory->execute(); // change PATH
-
-			// update parser's PATH
-			updatePath(new_change_directory->getDirectory());
 			
-			updateParser(start, current_parse, number_parses, all_cmds, 0); // update the parser
-			
-			delete new_change_directory; // dealloc mem
+			updateParser(start, current_parse, number_parses, all_cmds, new_change_directory); // update the parser
 		}
 		else { // append to vector
 			all_cmds.push_back(convertStrToChar(current_word)); // append char*
@@ -243,6 +236,11 @@ Command* Parser::getNextCommand(boost::tokenizer<boost::char_separator<char> >::
 			new_connector_cmd->setRightChild(new DefaultCommand(getRightSide(nextParse, originalToken, num_parses))); // get right-side files
 			return new_connector_cmd; // new connector
 		}
+		else if (current_word.size() == 2 && current_word == "cd") {
+			++num_parses;
+			++nextParse;
+			return new ChangeDirectory(getRightSide(nextParse, originalToken, num_parses), current_path);
+		}
 		else { // add char* to vector
 			cur_v.push_back(convertStrToChar(current_word)); // append char**
 			++num_parses; // inc. num parses
@@ -264,7 +262,6 @@ char* Parser::convertStrToChar(const string &current_word) {
 
 void Parser::updateParser(boost::tokenizer<boost::char_separator<char> >::iterator& initial_position, int current_parse, int & number_parses, vector<char*> & all_cmds, Command* new_cmd) {
 	if (!new_cmd) {return;} // update is not necessary
-	
 	while(current_parse != (number_parses - 1)) { // move current position to new position
 		++initial_position;
 		++current_parse;
@@ -315,7 +312,9 @@ void Parser::updatePath(char* full_path) {
 	string str_full_path(full_path); // convert to str
 	boost::char_separator<char> sep("/");
 	boost::tokenizer<boost::char_separator<char> > tok(str_full_path, sep); // set tokenizer
-
+	
+	updatePath(); // remove previous PATH for new PATH
+	
 	for (boost::tokenizer<boost::char_separator<char> >::iterator start = tok.begin(); start != tok.end(); ++start) {
 		current_path.push(*start);
 	}
@@ -361,5 +360,10 @@ void Parser::checkHostNameFailure() {
 	return;
 }
 
-
+void Parser::updatePath() {
+	while (!current_path.empty()) { // remove entire directory
+		current_path.pop();
+	}
+	return;
+}
 
