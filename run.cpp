@@ -10,12 +10,13 @@
 #include <errno.h>
 #include <stdio.h>
 #include "Parser.h"
+#include <unistd.h>
+#include <limits.h>
 using namespace std;
 
 int main() {
+	Parser new_parse; // commence parser
 	while (true) {
-		Parser new_parse;
-
 		new_parse.askUser(); // prompt user and get input
 
 		new_parse.parse(); // parse and build commands
