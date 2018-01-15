@@ -79,4 +79,17 @@ public:
 	stack<string>& getDirectory();
 };
 
+class HistoryCommand : public Command {
+private:
+	vector<string> command_history;
+public:
+	HistoryCommand();
+	HistoryCommand(const vector<string>&); //  current commands
+	~HistoryCommand();
+	bool execute();
+	void display();
+	char** getALLCMDS();
+	void setALLCMDS(char**);
+};
+
 #endif /* COMMAND_H_ */
