@@ -62,6 +62,8 @@ void Parser::askUser() {
 		getline(cin, user_input); // ask for user input
 	}
 	
+	command_history.push_back(user_input); // add to history
+	
 	free(full_path); // deallocate PATH
 	return;
 }
@@ -161,6 +163,9 @@ void Parser::parse() {
 			ChangeDirectory* new_change_directory = new ChangeDirectory(getRightSide(start, tok, number_parses), current_path);
 			
 			updateParser(start, current_parse, number_parses, all_cmds, new_change_directory); // update the parser
+		}
+		else if (current_word.size() == 7 && current_word == "history") { // generate a new history command
+			current_commands->push_back(new HistoryCommand(command_history));
 		}
 		else { // append to vector
 			all_cmds.push_back(convertStrToChar(current_word)); // append char*
