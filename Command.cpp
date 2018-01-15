@@ -273,6 +273,10 @@ bool ChangeDirectory::execute() {
 	bool change_directory_success = false;
 	string next_directory = "/";
 
+	if (!entire_directory.empty()) {
+		cout << "TOP: " << entire_directory.top() << endl;
+	}
+	
 	if (command) { // exists
 		string directory(command[0]); // contains directory
 		boost::char_separator<char> sep("/");
@@ -397,6 +401,36 @@ void ChangeDirectory::changeToHomeDirectory() {
 	while (!entire_directory.empty() && entire_directory.top() != "home") { // continue to pop until home directory is reached
 		entire_directory.pop();
 	}
+	return;
+}
+
+HistoryCommand::HistoryCommand() : Command(), command_history(0) {}
+
+HistoryCommand::HistoryCommand(const vector<string> &new_history) : Command(), command_history(new_history) {}
+
+HistoryCommand::~HistoryCommand() {}
+
+bool HistoryCommand::execute() {
+	if (command_history.size() > 0) { // history exists
+		for (int i = 0; i < command_history.size(); ++i) { // print all commands
+			cout << "  " << i + 1 << "  " << command_history.at(i) << endl;
+		}
+		
+		return true;
+	}
+	return false;
+}
+
+void HistoryCommand::display() {
+	cout << "history";
+	return;
+}
+
+char** HistoryCommand::getALLCMDS() {
+	return 0;
+}
+
+void HistoryCommand::setALLCMDS(char** new_cmd) {
 	return;
 }
 
