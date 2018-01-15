@@ -20,6 +20,7 @@ private:
 	string user_input; // what to do/ act on
 	vector<Command*>* current_commands; // holds all the commands
 	stack<string> current_path; // allows removal/adding of current directory
+	vector<string> command_history; // holds all the commands from the user
 	char** getRightSide(boost::tokenizer<boost::char_separator<char> >::iterator , boost::tokenizer<boost::char_separator<char> >&, int &); // form next char** (right-side of expression)
 	Command* getNextCommand(boost::tokenizer<boost::char_separator<char> >::iterator , boost::tokenizer<boost::char_separator<char> >&, int &); // // form next Command* (right-side of expression)
 	char* convertStrToChar(const string &); // convert string to char*
