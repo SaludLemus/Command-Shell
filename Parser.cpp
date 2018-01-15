@@ -212,6 +212,10 @@ Command* Parser::getNextCommand(boost::tokenizer<boost::char_separator<char> >::
 		string current_word(*nextParse); // holds right side
 		if (current_word.size() >= 1 && (current_word == "&&" || current_word == "||" || current_word.at(current_word.size() - 1) == ';' || current_word.at(current_word.size() - 1) == ']' || current_word == "|")) { // break for connectors
 			if (current_word.at(current_word.size() - 1) == ';') { // append to vector
+				if (current_word.substr(0, current_word.size() - 1) == "history") { // check for history command
+					++num_parses;
+					return new HistoryCommand(command_history);
+				}
 				current_word = current_word.substr(0, current_word.size() - 1);
 				cur_v.push_back(convertStrToChar(current_word));
 				++num_parses;
@@ -241,10 +245,14 @@ Command* Parser::getNextCommand(boost::tokenizer<boost::char_separator<char> >::
 			new_connector_cmd->setRightChild(new DefaultCommand(getRightSide(nextParse, originalToken, num_parses))); // get right-side files
 			return new_connector_cmd; // new connector
 		}
-		else if (current_word.size() == 2 && current_word == "cd") {
+		else if (current_word.size() == 2 && current_word == "cd") { // create new change directory command
 			++num_parses;
 			++nextParse;
 			return new ChangeDirectory(getRightSide(nextParse, originalToken, num_parses), current_path);
+		}
+		else if (current_word.size() == 7 && current_word == "history") { // create new history command
+			++num_parses;
+			return new HistoryCommand(command_history);
 		}
 		else { // add char* to vector
 			cur_v.push_back(convertStrToChar(current_word)); // append char**
