@@ -167,6 +167,9 @@ void Parser::parse() {
 		else if (current_word.size() == 7 && current_word == "history") { // generate a new history command
 			current_commands->push_back(new HistoryCommand(command_history));
 		}
+		else if (current_word.size() == 4 && current_word == "help") { // create new help command to the user
+			current_commands->push_back(new HelpCommand());
+		}
 		else { // append to vector
 			all_cmds.push_back(convertStrToChar(current_word)); // append char*
 		}
@@ -216,18 +219,22 @@ Command* Parser::getNextCommand(boost::tokenizer<boost::char_separator<char> >::
 					++num_parses;
 					return new HistoryCommand(command_history);
 				}
+				else if (current_word == "help") { // check for help command
+					++num_parses;
+					return new HistoryCommand();
+				}
 				current_word = current_word.substr(0, current_word.size() - 1);
 				cur_v.push_back(convertStrToChar(current_word));
 				++num_parses;
 			}
-			else if (current_word.size() >= 1 && current_word == "]") {
+			else if (current_word.size() >= 1 && current_word == "]") { // stat command alternative ending
 				cur_v.push_back(convertStrToChar(current_word));
 				++num_parses;
 			}
 
 			break;
 		}
-		else if (current_word.size() >= 1 && (current_word == ">" || current_word == ">>" || current_word == "<")) {
+		else if (current_word.size() >= 1 && (current_word == ">" || current_word == ">>" || current_word == "<")) { // create a new redirection
 			Connector* new_connector_cmd = 0;
 			if (current_word == ">") { // for ouput
 				new_connector_cmd = new Output();
@@ -254,6 +261,10 @@ Command* Parser::getNextCommand(boost::tokenizer<boost::char_separator<char> >::
 			++num_parses;
 			return new HistoryCommand(command_history);
 		}
+		else if (current_word.size() == 4 && current_word == "help") { // create new help command
+			++num_parses;
+			return new HelpCommand();
+		}
 		else { // add char* to vector
 			cur_v.push_back(convertStrToChar(current_word)); // append char**
 			++num_parses; // inc. num parses
@@ -265,7 +276,7 @@ Command* Parser::getNextCommand(boost::tokenizer<boost::char_separator<char> >::
 char* Parser::convertStrToChar(const string &current_word) {
 	char* current_char_ar = new char[current_word.size() + 1]; // total word size + 1 (+1 for NULL)
 
-	for (unsigned int i = 0; i < current_word.size(); ++i) {
+	for (unsigned int i = 0; i < current_word.size(); ++i) { // transfer each char from str to char*
 		current_char_ar[i] = current_word.at(i);
 	}
 
@@ -287,7 +298,7 @@ void Parser::updateParser(boost::tokenizer<boost::char_separator<char> >::iterat
 }
 
 void Parser::checkUserFailure() {
-	if (errno == 0 || errno == ENOENT || errno == EBADF || errno == EPERM) {
+	if (errno == 0 || errno == ENOENT || errno == EBADF || errno == EPERM) { // errno was set; send to stdout the error message
 		perror("Either the name or uid was not found.");
 	}
 	else if (errno == EINTR) {
