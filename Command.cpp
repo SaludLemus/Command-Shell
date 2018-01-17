@@ -434,4 +434,41 @@ void HistoryCommand::setALLCMDS(char** new_cmd) {
 	return;
 }
 
+HelpCommand::HelpCommand() : Command() {
+	supported_commands = "echo [string]   - echo back the string\n";
+	supported_commands.append("cd [directory]   - change directory\n");
+	supported_commands.append("cat [output file name] < [input file name]   - take file as input and redirect to new output file\n");
+	supported_commands.append("cat [source file] > [output file name]   - echo contents of file into another file (it will delete contents of that file)\n");
+	supported_commands.append("cat [source file] >> [output file name]   - same as above, but contents will be appended to the output file\n");
+	supported_commands.append("history   - displays all commands used\n");
+	supported_commands.append("test [p] [directory] ]  - determine whether the directory or file exists; [p] parameters: -e if directory/file exists, -d if directory\file is a directory, -f if directory/file is a regular file\n");
+	supported_commands.append("\tNOTE: alternative to test functionality: [ [p] [directory/file] ]\n");
+	supported_commands.append("[command1] | [command2]   - piping will take the output of the left-side and act as the input for the right-side\n");
+	supported_commands.append("help   - displays all supported commands\n");
+	supported_commands.append("[command3] &&/|| [command4]   - connectors such as && will execute the right-side command iff the left-side succeeded and || will execute the right-side command iff the left-side failed\n");
+	supported_commands.append("\tFINAL NOTE: The Command Shell is very strict in accordance to its syntax");
+}
+
+HelpCommand::~HelpCommand() {;}
+
+bool HelpCommand::execute() {
+	cout << supported_commands << flush;
+	return true;
+}
+
+void HelpCommand::display() {
+	cout << "help" << endl;
+	return;
+}
+
+char** HelpCommand::getALLCMDS() {
+	return 0;
+}
+
+void HelpCommand::setALLCMDS(char** new_command) {
+	return;
+}
+
+
+
 

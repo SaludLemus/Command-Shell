@@ -101,7 +101,7 @@ public:
 	bool execute();
 	void display();
 	char** getALLCMDS();
-	void setALLCMDs(char**);
+	void setALLCMDS(char**);
 };
 
 
