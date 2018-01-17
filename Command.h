@@ -92,4 +92,17 @@ public:
 	void setALLCMDS(char**);
 };
 
+class HelpCommand : public Command {
+private:
+	string supported_commands; // contains all current commands
+public:
+	HelpCommand();
+	~HelpCommand();
+	bool execute();
+	void display();
+	char** getALLCMDS();
+	void setALLCMDs(char**);
+};
+
+
 #endif /* COMMAND_H_ */
