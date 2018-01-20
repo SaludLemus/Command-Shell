@@ -273,10 +273,6 @@ bool ChangeDirectory::execute() {
 	bool change_directory_success = false;
 	string next_directory = "/";
 
-	if (!entire_directory.empty()) {
-		cout << "TOP: " << entire_directory.top() << endl;
-	}
-	
 	if (command) { // exists
 		string directory(command[0]); // contains directory
 		boost::char_separator<char> sep("/");
