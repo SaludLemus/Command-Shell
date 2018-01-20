@@ -56,7 +56,7 @@ void Parser::askUser() {
 	
 	while (user_input.size() == 0) {
 		cout << "[" << user_info->pw_name << '@' << current_host_name << ' ' << flush;
-		printPath(full_path); // entire path
+		printPath(full_path, user_info); // print proper PATH
 		cout << "]$ " << flush; // prompt
 
 		getline(cin, user_input); // ask for user input
@@ -352,9 +352,16 @@ void Parser::updatePath(stack<string> & new_directory) {
 }
 
 
-void Parser::printPath(char* full_path) {
-	if (full_path) {
-		cout << current_path.top(); // current directory
+void Parser::printPath(char* full_path, struct passwd* current_user) {
+	if (full_path && current_user) {
+		string current_directory(full_path);
+		size_t current_user_index = current_directory.find(current_user->pw_name); // check if current user is in PATH
+		if (current_user_index != string::npos) { // send to std::out directory from current user up to current directory
+			cout << current_directory.substr(current_user_index); // print directory contents
+		}
+		else {
+			cout << current_path.top(); // current user is not within the PATH
+		}
 	}
 
 	return;

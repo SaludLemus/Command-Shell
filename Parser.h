@@ -28,7 +28,7 @@ private:
 	void updatePath(char*); // converts current path (char*) into a stack
 	void updatePath(stack<string>&); // command's stack will serve as input to change parser's stack
 	void updatePath(); // remove current directory (only when the cd command is encountered)
-	void printPath(char*); // sent to stdout the current path
+	void printPath(char*, struct passwd*); // sent to stdout the current path
 	void checkPathFailure(); // perror the source of error for the system call
 	void checkUserFailure(); // perror the source of error for current user within the process
 	void checkHostNameFailure(); // perror the source of error when retrieving the current host name of the process
