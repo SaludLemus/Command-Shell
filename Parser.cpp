@@ -14,6 +14,9 @@
 #include <errno.h>
 #include <stdio.h>
 #include <limits.h>
+#include <locale.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 Parser::Parser() : current_commands(0) {
 	current_commands = new vector<Command*>;
@@ -34,7 +37,8 @@ void Parser::askUser() {
 	errno = 0;
 	struct passwd* user_info = getpwuid(user_id); // retrieve user ID's info
 	char* current_host_name = new char[sizeof(char) * HOST_NAME_MAX]; // retrieve host name
-	
+	char* user_input_cstr = NULL; // for readline()
+
 	if (user_info == NULL) { // entry not found (getpwuid() failed)
 		checkUserFailure();
 		exit(EXIT_FAILURE);
@@ -54,17 +58,25 @@ void Parser::askUser() {
 		exit(EXIT_FAILURE); // terminate the process
 	}
 	
-	while (user_input.size() == 0) {
+	while (true) {
 		cout << "[" << user_info->pw_name << '@' << current_host_name << ' ' << flush;
 		printPath(full_path, user_info); // print proper PATH
-		cout << "]$ " << flush; // prompt
 
-		getline(cin, user_input); // ask for user input
+		user_input_cstr = readline ("]$ ");
+
+		if (user_input_cstr && strlen(user_input_cstr) > 0) { // make command to str and break from loop
+			user_input = user_input_cstr;
+			break;
+		}
+		else if (user_input_cstr && strlen(user_input_cstr) == 0) { // be sure to free the allocated memory for an empty string
+			free(user_input_cstr);
+		}
 	}
-	
+
 	command_history.push_back(user_input); // add to history
 	
 	free(full_path); // deallocate PATH
+	free(user_input_cstr); // deallocate user input
 	return;
 }
 
